@@ -1,0 +1,98 @@
+### Variables
+@baseUrl = http://localhost:5000/api
+@authToken = {{login.response.body.token}}
+
+### 1. API Health & Endpoints Overview
+GET http://localhost:5000/
+Accept: application/json
+
+### 2. Register New Author / User
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "J.K. Rowling",
+  "email": "jk.rowling@example.com",
+  "password": "password123",
+  "role": "author",
+  "bio": "British author and philanthropist, best known for Harry Potter."
+}
+
+### 3. Login to Obtain JWT Token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jk.rowling@example.com",
+  "password": "password123"
+}
+
+### 4. Get Current User Profile (Protected - Bearer Token)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+
+### 5. Store a Single Book (Protected)
+POST {{baseUrl}}/books
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Harry Potter and the Philosopher's Stone",
+  "description": "The story of an orphaned boy who discovers he is a wizard.",
+  "price": 19.99,
+  "genre": "Fantasy",
+  "publishedYear": 1997,
+  "inStock": true
+}
+
+### 6. Store Multiple Books in Bulk (Protected)
+POST {{baseUrl}}/books/bulk
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "books": [
+    {
+      "title": "Harry Potter and the Chamber of Secrets",
+      "description": "Harry's second year at Hogwarts School of Witchcraft and Wizardry.",
+      "price": 21.99,
+      "genre": "Fantasy",
+      "publishedYear": 1998,
+      "inStock": true
+    },
+    {
+      "title": "Harry Potter and the Prisoner of Azkaban",
+      "description": "Harry confronts Sirius Black, an escaped convict from Azkaban.",
+      "price": 22.99,
+      "genre": "Fantasy",
+      "publishedYear": 1999,
+      "inStock": true
+    },
+    {
+      "title": "Harry Potter and the Goblet of Fire",
+      "description": "Harry competes in the dangerous Triwizard Tournament.",
+      "price": 24.99,
+      "genre": "Fantasy",
+      "publishedYear": 2000,
+      "inStock": true
+    }
+  ]
+}
+
+### 7. Get All Books (Basic listing)
+GET {{baseUrl}}/books
+Accept: application/json
+
+### 8. Get All Books Filtered by Genre
+GET {{baseUrl}}/books?genre=Fantasy
+Accept: application/json
+
+### 9. Get All Books WITH Author Details Populated
+GET {{baseUrl}}/books/with-author
+Accept: application/json
+
+### 10. Get a Single Book by ID (Replace with real MongoDB _id)
+GET {{baseUrl}}/books/66f000000000000000000001
+Accept: application/json
