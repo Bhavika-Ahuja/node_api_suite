@@ -1,5 +1,6 @@
 const Book = require('../models/Book');
 const User = require('../models/User');
+const redisClient = require('../utils/redisClient');
 
 // @desc    Store a single book (or multiple if array is passed)
 // @route   POST /api/books
@@ -143,14 +144,29 @@ const getAllBooks = async (req, res, next) => {
 // @access  Public
 const getAllBooksWithAuthor = async (req, res, next) => {
   try {
+    // CREATE KEY 
+    const key = "books-data"
+    const cachedData = await redisClient.get(key);
+
+
+
+    if (cachedData) {
+      const parsedData = JSON.parse(cachedData);
+      return res.status(200).json({
+        message: 'Fetched all books with author details successfully from redis', data: parsedData
+      });
+    }
     const books = await Book.find()
       .populate('author', 'name email role bio createdAt')
       .sort({ createdAt: -1 });
 
+    await redisClient.set(key, JSON.stringify(books), "EX", 60)
+
+
     res.status(200).json({
       success: true,
       count: books.length,
-      message: 'Fetched all books with author details successfully',
+      message: 'Fetched all books with author details successfully from db',
       data: books,
     });
   } catch (error) {
