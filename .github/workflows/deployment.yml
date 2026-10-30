@@ -33,5 +33,5 @@ jobs:
     - name: docker push docker image
       run : docker push bhavika-ahuja/node-api-suite:latest .
       
-    -name: docker step completed
-    run: echo "docker step completed"
+    - name: docker step completed
+      run: echo "docker step completed"
