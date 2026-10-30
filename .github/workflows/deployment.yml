@@ -31,7 +31,7 @@ jobs:
       run : echo "${{secrets.docker_hub_password}}" | docker login -u "${{secrets.docker_hub_username}}" --password-stdin
    
     - name: docker push docker image
-      run : docker push bhavika-ahuja/node-api-suite:latest.
+      run : docker push bhavika-ahuja/node-api-suite:latest .
       
     -name: docker step completed
     run: echo "docker step completed"
