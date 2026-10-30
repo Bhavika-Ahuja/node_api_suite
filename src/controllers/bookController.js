@@ -45,6 +45,12 @@ const storeSingleBook = async (req, res, next) => {
       author: authorId,
     });
 
+    try {
+      if (redisClient && typeof redisClient.del === 'function') {
+        await redisClient.del('books-data');
+      }
+    } catch (_) {}
+
     res.status(201).json({
       success: true,
       message: 'Book created successfully',
@@ -92,6 +98,12 @@ const storeBooks = async (req, res, next) => {
     }
 
     const insertedBooks = await Book.insertMany(preparedBooks);
+
+    try {
+      if (redisClient && typeof redisClient.del === 'function') {
+        await redisClient.del('books-data');
+      }
+    } catch (_) {}
 
     res.status(201).json({
       success: true,
@@ -144,24 +156,42 @@ const getAllBooks = async (req, res, next) => {
 // @access  Public
 const getAllBooksWithAuthor = async (req, res, next) => {
   try {
-    // CREATE KEY 
-    const key = "books-data"
-    const cachedData = await redisClient.get(key);
+    const key = 'books-data';
+    let cachedData = null;
 
-
+    try {
+      if (redisClient && typeof redisClient.get === 'function') {
+        cachedData = await redisClient.get(key);
+      }
+    } catch (redisError) {
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('Redis cache get error, falling back to database:', redisError.message);
+      }
+    }
 
     if (cachedData) {
       const parsedData = JSON.parse(cachedData);
       return res.status(200).json({
-        message: 'Fetched all books with author details successfully from redis', data: parsedData
+        success: true,
+        count: parsedData.length,
+        message: 'Fetched all books with author details successfully from redis',
+        data: parsedData,
       });
     }
+
     const books = await Book.find()
       .populate('author', 'name email role bio createdAt')
       .sort({ createdAt: -1 });
 
-    await redisClient.set(key, JSON.stringify(books), "EX", 60)
-
+    try {
+      if (redisClient && typeof redisClient.set === 'function') {
+        await redisClient.set(key, JSON.stringify(books), 'EX', 60);
+      }
+    } catch (redisError) {
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('Redis cache set error:', redisError.message);
+      }
+    }
 
     res.status(200).json({
       success: true,
